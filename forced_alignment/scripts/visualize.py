@@ -28,7 +28,7 @@ def pipeline(directory):
         "features": (2.29, 2.16, "MFCCs\n25 ms / 10 ms hop"),
         "model": (4.04, 2.16, "Acoustic model\nGMM–HMM"),
         "text": (0.68, 1.17, "Transcript\nKnown words"),
-        "dictionary": (2.29, 1.17, "Lexicon + G2P\nWord → phones"),
+        "dictionary": (2.29, 1.17, "Lexicon\nG2P for OOV study"),
         "graph": (4.04, 1.17, "Decoding graph\nAllowed phone paths"),
         "decode": (5.95, 1.65, "Constrained search\nBest timed path"),
         "output": (5.95, 0.50, "TextGrid\nWords + phones"),
@@ -137,17 +137,23 @@ def plot_corpus(results, directory, data):
 
 def plot_distributions(directory, data):
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.75), layout="constrained")
-    for i, (config, grids) in enumerate(data["grids"].items()):
+    grids_by_config = data["grids"]
+    same_beams = grids_by_config["baseline"] == grids_by_config["decoding_sensitivity"]
+    for i, (config, grids) in enumerate(grids_by_config.items()):
+        if same_beams and config == "decoding_sensitivity":
+            continue
+        curve_label = "Baseline / wide beam" if same_beams and config == "baseline" else LABELS[i]
         for axis, tier, edges in [(axes[0], 0, np.arange(0, 601, 20)), (axes[1], 1, np.arange(0, 401, 10))]:
             samples = [1000 * (end - start) for grid in grids.values() for start, end, label in grid[tier]
                        if label not in {"<unk>", "spn", "<oov>"}]
             if samples:
                 counts, _ = np.histogram(np.minimum(samples, edges[-1]), edges)
-                axis.stairs(counts / len(samples) * 100, edges, label=LABELS[i], color=COLORS[i], lw=1.3)
-    axes[0].set(title="(a) Word durations", ylabel="Intervals (%)", xlabel="Duration (ms)")
-    axes[1].set(title="(b) Phone durations", xlabel="Duration (ms)")
-    axes[0].text(.98, .08, "Last bin includes ≥600 ms", transform=axes[0].transAxes, ha="right", fontsize=7)
-    axes[1].text(.98, .08, "Last bin includes ≥400 ms", transform=axes[1].transAxes, ha="right", fontsize=7)
+                axis.stairs(counts / len(samples) * 100, edges, label=curve_label, color=COLORS[i], lw=1.3)
+    axes[0].set(title="(a) Word durations", ylabel="Intervals (%)", xlabel="Duration (ms)",
+                xticks=[0, 100, 200, 300, 400, 500, 580],
+                xticklabels=["0", "100", "200", "300", "400", "500", "≥580"])
+    axes[1].set(title="(b) Phone durations", xlabel="Duration (ms)",
+                xticks=[0, 100, 200, 300, 390], xticklabels=["0", "100", "200", "300", "≥390"])
     axes[0].legend(frameon=False, fontsize=8)
     save(fig, directory, "durations")
 
