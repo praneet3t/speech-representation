@@ -1,3 +1,4 @@
+from importlib import import_module
 import itertools
 import sys
 from pathlib import Path
@@ -6,10 +7,9 @@ import numpy as np
 import pytest
 import torch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+project = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(project))
 
-from emotion_recognition.scripts.analyze import classification_metrics, verified_predictions
-from emotion_recognition.scripts.prepare_data import select_unique
 from models.dataset import EMOTIONS, linguistic_audit, make_split, parse_filename, transcript, verify_split
 from models.features import HOP, MELS, SAMPLE_RATE, WINDOW, log_mel_features, masked_mean
 from models.fusion_pipeline.model import FusionModel, SpeechControl
@@ -17,6 +17,9 @@ from models.speech_pipeline.model import SpeechModel
 from models.speech_pipeline.test import embeddings
 from models.text_pipeline.model import TextModel
 from models.training import AcousticData, acoustic_batch, fit_acoustic_normalizer
+
+analysis = import_module(f"{project.name}.scripts.analyze")
+preparation = import_module(f"{project.name}.scripts.prepare_data")
 
 
 @pytest.fixture(autouse=True, scope="module")
@@ -44,11 +47,11 @@ def test_filename_and_transcript_exclude_metadata():
 
 def test_duplicate_waveform_checks():
     row = {"id": "one", "pcm_sha256": "alpha"}
-    assert select_unique([row, dict(row)]) == ([row], 1)
+    assert preparation.select_unique([row, dict(row)]) == ([row], 1)
     with pytest.raises(ValueError, match="Differing waveforms"):
-        select_unique([row, {"id": "one", "pcm_sha256": "beta"}])
+        preparation.select_unique([row, {"id": "one", "pcm_sha256": "beta"}])
     with pytest.raises(ValueError, match="different IDs"):
-        select_unique([row, {"id": "two", "pcm_sha256": "alpha"}])
+        preparation.select_unique([row, {"id": "two", "pcm_sha256": "alpha"}])
 
 
 @pytest.mark.parametrize("protocol", ["word", "holdout_oaf", "holdout_yaf"])
@@ -128,7 +131,7 @@ def test_metrics_reconstruct_from_probabilities():
     rows = [{"id": str(i), "predicted": e if i != 0 else EMOTIONS[1], "true": e,
              **{f"p_{x}": float(x == (e if i else EMOTIONS[1])) for x in EMOTIONS}}
             for i, e in enumerate(EMOTIONS)]
-    verified_predictions(rows, {r["id"]: {"emotion": r["true"]} for r in rows}, {r["id"] for r in rows})
-    values, by_class, confusion = classification_metrics(rows)
+    analysis.verified_predictions(rows, {r["id"]: {"emotion": r["true"]} for r in rows}, {r["id"] for r in rows})
+    values, by_class, confusion = analysis.classification_metrics(rows)
     assert values["accuracy"] == values["balanced_accuracy"] == pytest.approx(6 / 7)
     assert by_class[0]["recall"] == 0 and confusion.sum() == len(EMOTIONS)

@@ -37,7 +37,7 @@ def discover_inputs(data):
     roots = [p for p in (data, *sorted(data.iterdir()))
              if (p / "wav").is_dir() and (p / "transcripts").is_dir()] if data.is_dir() else []
     if len(roots) != 1:
-        raise ValueError("Extract the supplied zip under forced_alignment/data, or pass --wav and --transcripts.")
+        raise ValueError("Extract the supplied zip under 2a_forced_alignment/data, or pass --wav and --transcripts.")
     return roots[0] / "wav", roots[0] / "transcripts"
 
 

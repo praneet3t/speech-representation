@@ -1,9 +1,9 @@
 __pycache__/
 .pytest_cache/
-forced_alignment/data/
-forced_alignment/work/
+2a_forced_alignment/data
+2a_forced_alignment/work
 *.log
 
-emotion_recognition/work/
+2b_emotion_recognition/work
 
 .venv-emotion/

@@ -1,0 +1,153 @@
+% Build from 2b_emotion_recognition/ with XeLaTeX twice.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=20mm,top=17mm,bottom=19mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\usepackage{amsmath,booktabs,graphicx,caption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\captionsetup{font=small,labelfont=bf,skip=4pt,hypcap=false}
+\graphicspath{{Results/plots/}}
+\newcommand{\reportfigure}[4]{%
+  \par\medskip\noindent\begin{minipage}{\linewidth}
+    \centering\includegraphics[width=#1\linewidth]{#2}%
+    \captionof{figure}{#3}\label{#4}
+  \end{minipage}\par\medskip
+}
+\hypersetup{pdftitle={Multimodal Emotion Recognition: Acoustic Cues and Repeated Transcripts in TESS}}
+% Add an author name here if needed for submission.
+\newcommand{\reportauthor}{}
+
+\begin{document}
+{\LARGE\bfseries Multimodal Emotion Recognition\par}
+\vspace{2pt}
+{\large Acoustic Cues and Repeated Transcripts in TESS\par}
+\ifx\reportauthor\empty\else\medskip\reportauthor\par\fi
+\medskip
+
+\begin{abstract}
+We compared speech, text, and feature-level fusion on 2,800 recordings from the Toronto Emotional Speech Set (TESS). Each carrier sentence occurs equally often across seven emotions. Text-only accuracy reached its empirical ceiling of 14.29\%. On held-out words, a bidirectional GRU reached 99.84\% accuracy and fusion reached 99.76\%, averaged over three optimization seeds. Speech accuracy fell to 42.26\% and 37.10\% when holding out each of the two speakers in turn. Fusion also trailed speech on both holdouts. Permuting text embeddings had little effect, while zeroing speech reduced fusion to 14.29\% in all three protocols. Fusion embeddings formed tighter emotion clusters on the word-disjoint test set, yet yielded no consistent accuracy gain. The results describe acted speech from two speakers and show why word-disjoint evaluation alone can overstate transfer to an unseen speaker.
+\end{abstract}
+
+\section{Question}
+Text can carry emotional meaning when people choose different words or phrases. TESS uses the same sentence template for each emotion, so it separates lexical content from how an utterance is delivered. We compare the three modalities under two questions. Can the models recognize the emotion of an unfamiliar target word spoken by the same actors? How well do those models transfer to the other actor when trained on only one?
+
+\section{Corpus and transcript audit}
+TESS consists of 200 target words spoken by two actors in seven categories: anger, disgust, fear, happiness, neutral, sadness, and pleasant surprise \cite{tess}. The archive contained 5,600 WAV entries in duplicate trees. File and decoded-waveform hashes identified 2,800 distinct recordings, totaling 95.91 minutes. The selected WAVs matched the original release manifest. Each emotion has 400 recordings, split equally between the two speakers (Figure~\ref{fig:data}a).
+
+The archive has no separate transcripts. The lexical input was reconstructed as “Say the word [target]” from the documented carrier phrase and the target token in each filename. Speaker, emotion, path, and file identifiers stayed outside the tokenizer. Each reconstructed sentence has 14 recordings, two per emotion. Therefore the observed conditional label entropy, $H(Y\mid T)$, equals the marginal entropy $H(Y)=\log_2 7 \approx 2.807$ bits. The empirical mutual information is zero. For a deterministic predictor with access only to the transcript $T$, the best possible classification accuracy on these balanced groups is
+\begin{equation}
+  A^*_{\text{text}}=\frac{1}{N}\sum_t \max_e n_{t,e}=\frac{1}{7},
+\end{equation}
+where $n_{t,e}$ is the observed number of recordings of sentence $t$ in emotion $e$. The same balance holds in every test partition.
+
+\reportfigure{.84}{dataset.pdf}{Unique recordings by speaker and emotion (a). Each of the 200 reconstructed texts has the same conditional label distribution (b).}{fig:data}
+
+\section{Models}
+Figure~\ref{fig:arch} summarizes the three paths. Audio was resampled to mono at 16 kHz. Conservative trimming removed at most 250 ms per edge and retained a 100 ms margin around detected activity. Log-Mel inputs used a 25 ms Hann window, a 10 ms hop, a 512-point FFT, and 64 filters covering 30–7,800 Hz. Means and standard deviations per Mel band were fitted on training frames for each protocol. The transformation retained amplitude differences between recordings.
+
+The speech model used a stride-three convolution to project the 64 bands to 48 channels. A bidirectional gated recurrent unit (GRU) with 64 hidden units per direction operated on packed sequences \cite{gru}. A GRU reset gate controls the previous state's contribution to the candidate state, and its update gate mixes the old and candidate states. Masked mean pooling over valid recurrent steps gave a 128-dimensional vector. A two-layer classifier predicted the seven emotions.
+
+The text model tokenized the carrier sentence and passed it through frozen \texttt{all-MiniLM-L6-v2} \cite{minilm}. The contextual token states were pooled with an attention-mask-aware mean. Each distinct sentence was cached as one 384-dimensional vector. A small multilayer classifier was trained on those vectors.
+
+Fusion reused the matching speech-only encoder and the cached MiniLM representation. Both encoders were frozen. Learned projections mapped speech and text to 48 and 32 dimensions, then concatenation and a nonlinear projection yielded a 64-dimensional representation for classification. The speech control used the same frozen speech encoder and a comparably sized classifier. Its 24,215 trainable parameters were within 0.3\% of fusion's 24,151. Speech and text had 61,751 and 18,823 trainable parameters, respectively.
+
+\reportfigure{.98}{architecture.pdf}{Speech, text, and feature-level fusion. $B$ is batch size, $T$ and $T'$ are acoustic sequence lengths before and after the convolution, and $L$ is token sequence length.}{fig:arch}
+
+\section{Evaluation}
+The primary split assigned complete target words to training, validation, or test. Each speaker holdout kept validation within the training speaker and used every recording of the other speaker for testing (Table~\ref{tab:splits}). Thus the speaker holdouts share vocabulary across train and test. Every modality used the same IDs within a protocol. Sample IDs and decoded-waveform hashes were checked for partition leakage.
+
+\begin{center}
+\captionof{table}{Samples per partition. The word split contains 140 training words, 30 validation words and 30 test words. Each speaker holdout shares 170 target words between training and test.}\label{tab:splits}
+\smallskip
+\begin{tabular}{lrrr}
+\toprule
+Test protocol & Train & Validation & Test\\
+\midrule
+Held-out words & 1960 & 420 & 420\\
+Hold out OAF & 1190 & 210 & 1400\\
+Hold out YAF & 1190 & 210 & 1400\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Each of the three main pipelines and the speech control ran with optimization seeds 42, 123, and 456 per protocol. Training minimized cross-entropy with AdamW and selected checkpoints by validation macro F1, breaking ties with validation loss. The maximum was 35 epochs with patience of eight. Together with one training-label permutation control, this yielded 37 trained runs. Test predictions were scored after checkpoint selection. Per-sample probabilities were saved and checked against the split manifests.
+
+\section{Performance}
+Table~\ref{tab:accuracy} gives the average and sample standard deviation across seeds. On held-out words, macro F1 was $99.84\pm0.14$ for speech, $11.85\pm1.06$ for text, and $99.76\pm0.24$ for fusion. Text had identical accuracy across the splits because the same sentence shares one prediction across all seven labels. Its class-specific predictions can still shift, which explains why macro F1 falls below accuracy.
+
+\begin{center}
+\captionof{table}{Accuracy in percent, mean $\pm$ sample standard deviation over three seeds.}\label{tab:accuracy}
+\smallskip
+\begin{tabular}{lrrr}
+\toprule
+Test protocol & Speech & Text & Fusion\\
+\midrule
+Held-out words & $99.84\pm0.14$ & $14.29\pm0.00$ & $99.76\pm0.24$\\
+Hold out OAF   & $42.26\pm6.04$ & $14.29\pm0.00$ & $40.48\pm7.84$\\
+Hold out YAF   & $37.10\pm2.03$ & $14.29\pm0.00$ & $36.00\pm2.37$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Holding out a speaker sharply reduced speech and fusion accuracy (Figure~\ref{fig:speakers}). Anger had the lowest mean F1 among speech and fusion classes on held-out words. Happiness, neutral, and surprise reached 100\% F1 for both. Happiness was the weakest class in each speaker-holdout direction. Neutral was strongest when testing OAF and disgust when testing YAF. These shifts show that difficulty depends on the test speaker.
+
+\reportfigure{.94}{speaker_holdout.pdf}{Speaker-holdout accuracy. Error bars show sample standard deviation across the three optimization seeds.}{fig:speakers}
+
+Because word-disjoint scores were unusually high, the checks covered exact audio and feature duplicates, held-out IDs, validation checkpoint selection, and reconstruction from the recorded class probabilities. A separate run with permuted training labels reached 21.90\% accuracy, far below the original scores. One permutation with correlated recordings does not establish an exact chance distribution.
+
+\section{Fusion controls}
+The word-disjoint frozen speech control reached 99.84\% accuracy. Fusion was 0.08 percentage points below speech, with a 95\% word-grouped bootstrap interval of $[-0.24,\,0.00]$ points. Each bootstrap draw resampled target words and kept their recordings and optimization seeds together. On the OAF test, fusion trailed the speech control by 0.55 points. On the YAF test, it led by 1.00 point. Fusion trailed the end-to-end speech classifier in both directions.
+
+Figure~\ref{fig:ablation} summarizes sensitivity to removing or permuting a modality. Masking speech with zeros brought fusion accuracy to 14.29\% in every protocol. Masking text shifted mean accuracy by at most 0.91 points. Five fixed text permutations per seed kept the word-disjoint mean within 99.76–99.84\%. These interventions probe the trained classifier. Zero vectors can fall outside the distribution of training inputs, so the separately trained speech control provides a complementary comparison.
+
+\reportfigure{.98}{ablations.pdf}{Fusion, the capacity-matched speech control, and test-time sensitivity checks. Each permutation bar first averages the five permutations within seed, then summarizes the three seeds.}{fig:ablation}
+
+\section{Representations}
+We compared the speech temporal vector, MiniLM mean-pooled vector, and learned fusion projection for the same 420 word-disjoint test recordings at seed 42. Figure~\ref{fig:embeds} shows PCA and t-SNE projections \cite{tsne}. Text has just 30 distinct vectors in this subset, each shared by all seven labels. Each projection was fitted on distinct text vectors and the repeated samples were drawn as coincident points.
+
+Original-space emotion silhouette was 0.653 for speech, $-0.017$ for text, and 0.812 for fusion. The higher fusion silhouette describes separation in this particular representation space. The score and projections give no evidence of higher classification accuracy or speaker transfer.
+
+\reportfigure{.97}{representations.pdf}{PCA and t-SNE for the temporal, contextual, and fused embeddings. Each open circle in the text panels represents one carrier sentence shared by the seven emotions.}{fig:embeds}
+
+\section{Error cases}
+Five held-out clips were selected at seed 42. The selection prioritized speech/fusion disagreements and joint failures, used a word-disjoint example where available, and ranked cases by wrong-class confidence within each selection group. Figure~\ref{fig:errors} shows the waveform and log-Mel features after the same trimming used by the model.
+
+\begin{center}
+\captionof{table}{Selected errors. The text classifier's predictions are included for comparison. “Surprise” denotes pleasant surprise.}\label{tab:failures}
+\smallskip
+\small
+\begin{tabular}{lllll}
+\toprule
+Clip & True emotion & Speech & Text & Fusion\\
+\midrule
+\texttt{YAF\_hash\_disgust} & Disgust & Surprise & Surprise & Disgust\\
+\texttt{OAF\_tape\_neutral} & Neutral & Neutral & Happiness & Disgust\\
+\texttt{YAF\_bean\_anger} & Anger & Disgust & Anger & Disgust\\
+\texttt{YAF\_ton\_neutral} & Neutral & Disgust & Surprise & Disgust\\
+\texttt{YAF\_rain\_neutral} & Neutral & Disgust & Happiness & Disgust\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\newpage
+Fusion recovered “hash” in the YAF holdout and introduced an error on “tape” in the OAF holdout. In the word-disjoint test, both acoustic models predicted disgust for “bean”. The retained “tape” and “bean” clips measured $-39.1$ and $-24.3$ dBFS RMS, respectively. The waveforms show this energy difference. Identifying which cues drove either decision would require further evidence.
+
+\reportfigure{.81}{failure_cases.pdf}{Retained waveforms and log-Mel views for the five clips in Table~\ref{tab:failures}. Spectrogram contrast is scaled within clip. Waveform amplitude retains a common scale.}{fig:errors}
+
+\section{Conclusion}
+The acoustic models recognized held-out words reliably within TESS but transferred poorly between its two speakers. Reconstructed text had no independent label information, and its learned classifier reached the 14.29\% bound implied by the dataset design. The capacity and masking controls agree that the speech stream accounts for most of fusion's performance in this setting. These findings concern two actors reading a fixed carrier phrase. They leave open how lexical information contributes when speakers choose their own words and when more speakers are available for evaluation.
+
+\begingroup\small
+\setlength{\parskip}{0pt}
+\begin{thebibliography}{9}
+\setlength{\itemsep}{1pt}
+\bibitem{tess} M. K. Pichora-Fuller and K. Dupuis. Toronto emotional speech set (TESS). Borealis, 2020. \href{https://doi.org/10.5683/SP2/E8H2MF}{DOI}.
+\bibitem{gru} K. Cho et al. Learning Phrase Representations using RNN Encoder–Decoder for Statistical Machine Translation. \emph{EMNLP}, pp. 1724–1734, 2014. \href{https://aclanthology.org/D14-1179/}{ACL Anthology}.
+\bibitem{minilm} Sentence Transformers. \emph{all-MiniLM-L6-v2} model card. Checkpoint revision \texttt{1110a243}. \href{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2}{Model card}.
+\bibitem{tsne} L. van der Maaten and G. Hinton. Visualizing Data using t-SNE. \emph{Journal of Machine Learning Research}, 9, 2579–2605, 2008. \href{https://jmlr.org/papers/v9/vandermaaten08a.html}{Article}.
+\end{thebibliography}
+\endgroup
+\end{document}

@@ -68,7 +68,7 @@ def draw_intervals(axis, intervals, lo, hi, color, row=0, height=1.0):
 
 def plot_alignment(directory, wav, name, tiers, center):
     sound = parselmouth.Sound(str(wav))
-    # Praat calculates the spectrum directly from the assignment recording.
+    # Praat calculates the spectrum directly from the source recording.
     spectrogram = sound.to_spectrogram(window_length=.025, maximum_frequency=8000, time_step=.006)
     power = 10 * np.log10(np.maximum(spectrogram.values, 1e-20))
     ceiling = np.percentile(power, 99.6)
