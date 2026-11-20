@@ -1,0 +1,176 @@
+% Build from forced_alignment/ with XeLaTeX twice to resolve references.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=20mm,top=17mm,bottom=19mm]{geometry}
+\usepackage{fontspec}
+\setmainfont{Latin Modern Roman}
+\newfontfamily\ipafont{DejaVu Serif}
+\usepackage{amsmath,booktabs,graphicx,caption}
+\usepackage[hidelinks]{hyperref}
+\usepackage{microtype}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\textfloatsep}{8pt}
+\captionsetup{font=small,labelfont=bf,skip=4pt,hypcap=false}
+\graphicspath{{Results/plots/}}
+\newcommand{\reportfigure}[4]{%
+  \par\medskip\noindent\begin{minipage}{\linewidth}
+    \centering\includegraphics[width=#1\linewidth]{#2}%
+    \captionof{figure}{#3}\label{#4}
+  \end{minipage}\par\medskip
+}
+\newcommand{\measure}[1]{\texttt{#1}}
+\hypersetup{pdftitle={Phonetic Forced Alignment: Pronunciation Coverage and Boundary Consistency}}
+% Add the supplied author name here before submission, if required.
+\newcommand{\reportauthor}{}
+
+\begin{document}
+{\LARGE\bfseries Phonetic Forced Alignment\par}
+\vspace{2pt}
+{\large Pronunciation Coverage and Boundary Consistency\par}
+\ifx\reportauthor\empty\else\medskip\reportauthor\par\fi
+\medskip
+
+\begin{abstract}
+We examined how pronunciation coverage, the choice of pretrained configuration, and beam width affect forced alignment on six supplied recordings (97.16 s, 243 word tokens). Montreal Forced Aligner produced 24 validated TextGrids across four configurations. The baseline lexicon lacked six spellings occurring in seven tokens. Grapheme-to-phoneme augmentation supplied candidates for those spellings, removed seven unknown-phone intervals, and preserved both boundaries for 231 of 243 words. The alternative English US ARPA model and dictionary preserved both boundaries for 64 words. Increasing the beam and retry beam produced byte-identical TextGrids. The largest word-end discrepancy was 2.44 s for “bed”, where the baseline labelled a much quieter trailing region as part of the final stop. These comparisons measure coverage and agreement on a small corpus with no independent timing annotations.
+\end{abstract}
+
+\section{Introduction}
+Forced alignment estimates when the phones and words of a supplied transcript occur in a recording. Automatic speech recognition must also infer the word sequence. Given that sequence, an aligner can still choose among pronunciations, durations and silence placements \cite{mfa}. Here we ask which boundaries are sensitive to dictionary coverage, the pretrained model–dictionary pair, and decoder pruning. A transcript can be fully accounted for even when an exported interval includes a long quiet tail.
+
+\section{Dataset and preprocessing}
+The corpus contains three longer passages and three short, five-word ISLE prompts (Table~\ref{tab:corpus}, Figure~\ref{fig:corpus}a–b). The loader pairs files by stem and writes one mono WAV and one normalized \measure{.lab} per recording. It checks that NIST SPHERE conversion preserves the PCM sample sequence and time origin. Normalization includes lowercasing, standardizing apostrophes, and separating letters in spoken initialisms. Speaker identities were unverified, so each recording was assigned its own MFA speaker group.
+
+\begin{center}
+\captionof{table}{Corpus inventory after transcript normalization.}\label{tab:corpus}
+\smallskip
+\begin{tabular}{lrrrr}
+\toprule
+Source format & Recordings & Duration (s) & Word tokens & Sample rate (kHz)\\
+\midrule
+NIST SPHERE & 3 & 84.66 & 228 & 16\\
+PCM WAV & 3 & 12.50 & 15 & 16\\
+\textbf{Total} & \textbf{6} & \textbf{97.16} & \textbf{243} & \textbf{16}\\
+\bottomrule
+\end{tabular}
+
+{\small There were 150 distinct normalized word types across the six transcripts.}
+\end{center}
+
+\reportfigure{.75}{corpus_and_runtime.pdf}{Recording length and transcript size (a–b), dictionary coverage (c), and saved alignment wall times (d). Labels above the runtime bars show the real-time factor.}{fig:corpus}
+
+\section{Methodology}
+The runs used Python 3.11.18 and MFA 3.3.9 in a pinned Conda environment, with three jobs. After corpus preparation, the runner fetched the acoustic models, dictionaries and G2P model from pinned releases and checked their SHA-256 digests. It measured dictionary coverage, built the corpus lexicon, invoked \measure{mfa validate} and \measure{mfa align}, and audited the saved TextGrids. Figure~\ref{fig:pipeline} shows the two inputs to constrained decoding.
+
+\paragraph{Acoustic features and models.}
+MFA computes mel-frequency cepstral coefficients (MFCCs) from short-time log mel spectra using 25 ms windows and a 10 ms hop. The model metadata specify 13 coefficients, cepstral mean and variance normalization, and delta features. Both acoustic models are pretrained Gaussian mixture model–hidden Markov models (GMM–HMMs). The mixtures give frame likelihoods for context-dependent phone states. HMM transitions allow states to persist or advance \cite{kaldi,models}.
+
+\paragraph{Pronunciation and search.}
+The lexicon maps spellings to phone sequences and can retain multiple variants. For the corpus lexicon, MFA's English US MFA G2P 3.0.0 model, based on Phonetisaurus, proposed pronunciations only for missing spellings. The runner retained official pronunciations and checked phone inventory compatibility \cite{phonetisaurus}. MFA and Kaldi build an utterance-specific weighted graph from the transcript, the allowed pronunciations, optional silence, and HMM transitions. A simplified Viterbi recursion is
+\begin{equation}
+  V_t(j) = \ell_j(x_t) + \max_{i\to j}\{V_{t-1}(i) + a_{ij}\},
+\end{equation}
+where $\ell_j(x_t)$ is the acoustic log score of frame $x_t$ in state $j$ and $a_{ij}$ is a transition log score. The beam prunes partial paths far behind the best current score. A wider retry beam may be used if initial decoding fails \cite{mfadocs}.
+
+\paragraph{Outputs and checks.}
+MFA recovers the timed path and writes word and phone intervals in Praat TextGrids. The repository checks tier structure, times and ordered word labels, matches token occurrences with a longest common subsequence, and aggregates counts and boundary differences. Praat waveform and spectrogram views were generated through Parselmouth \cite{parselmouth}.
+
+\reportfigure{.91}{pipeline.pdf}{MFA uses acoustic scores and a transcript-constrained graph to export word and phone tiers. G2P augmentation is specific to the corpus-dictionary experiment.}{fig:pipeline}
+
+\section{Experimental configurations}
+The baseline model was trained on several English corpora, including Common Voice and LibriSpeech, and uses an IPA-based inventory. English US ARPA was trained on LibriSpeech and uses stress-marked ARPAbet \cite{models}. The ARPA comparison changes the acoustic model and dictionary as a pair. The other comparisons hold the baseline acoustic model fixed (Table~\ref{tab:configs}). The corpus is too small for separate acoustic model training or a defensible speaker adaptation experiment.
+
+\begin{center}
+\captionof{table}{Configurations on the same recordings and transcripts.}\label{tab:configs}
+\smallskip
+\begin{tabular}{llll}
+\toprule
+Run & Acoustic model & Dictionary & Beam / retry\\
+\midrule
+Baseline & English MFA 3.1.0 & English US MFA 3.1.0 & 10 / 40\\
+Corpus dictionary & English MFA 3.1.0 & Corpus subset + G2P & 10 / 40\\
+US ARPA & English US ARPA 3.0.0 & English US ARPA 3.0.0 & 10 / 40\\
+Wide beam & English MFA 3.1.0 & English US MFA 3.1.0 & 100 / 400\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Results}
+\subsection{Pronunciation coverage and completion}
+The baseline dictionary lacked \emph{depoliticize}, \emph{dukakis}, \emph{judgeships}, \emph{maffy}, \emph{margo} and \emph{melnicove}. \emph{Dukakis} occurred twice, giving seven affected tokens. The corpus dictionary retained official variants for covered words and added pretrained G2P candidates for each of the six spellings. Type-level OOV fell from 4.00\% to zero and token-level OOV from 2.88\% to zero. The ARPA pair had four OOV types and five OOV tokens (2.67\% and 2.06\%, respectively). Figure~\ref{fig:corpus}c shows both denominators.
+
+The augmented lexicon removed the seven baseline \measure{spn} intervals. All runs still exported the same 243 word labels in transcript order. MFA can keep a word's spelling in the word tier while representing an unknown pronunciation with \measure{spn} in the phone tier. The drop in \measure{spn} therefore shows greater lexical coverage. The generated pronunciations, especially names, remain unverified.
+
+\begin{center}
+\captionof{table}{Completion, dictionary coverage and runtime. Phones exclude \measure{spn} and silence. Time is alignment wall time and excludes the separate validation call. Real-time factor (RTF) is alignment time divided by corpus duration.}\label{tab:results}
+\smallskip
+\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+Run & Files & Words & Phones & \measure{spn} & OOV type/token (\%) & Time (s) & RTF\\
+\midrule
+Baseline & 6/6 & 243 & 994 & 7 & 4.00 / 2.88 & 35.12 & 0.36\\
+Corpus dictionary & 6/6 & 243 & 1043 & 0 & 0.00 / 0.00 & 17.95 & 0.18\\
+US ARPA & 6/6 & 243 & 1026 & 5 & 2.67 / 2.06 & 74.56 & 0.77\\
+Wide beam & 6/6 & 243 & 994 & 7 & 4.00 / 2.88 & 35.60 & 0.37\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All 24 TextGrids passed the structural and duration checks. The timings in Table~\ref{tab:results} and Figure~\ref{fig:corpus}d come from one saved execution per configuration. Initialization, caching and system load can affect these values.
+
+\subsection{Word and phone durations}
+Median word duration was 320 ms in every run, with a 170–460 ms interquartile range (IQR), rounded to the nearest millisecond. The median phone duration was 70 ms in all runs. The phone IQR was 50–100 ms for the baseline model runs and 50–90 ms for US ARPA. Figure~\ref{fig:durations} shows the distributions with overflow bins at 580 ms for words and 390 ms for phones. The baseline has three phones shorter than 30 ms and three longer than 300 ms. Brief acoustic events and quiet tails warrant different interpretations. In particular, the baseline final \mbox{/{\ipafont d}/} of “bed” spans 2.71 s and includes the quiet region examined in Section~\ref{sec:inspection}.
+
+\reportfigure{.97}{durations.pdf}{Saved word and phone duration distributions. Identical baseline and wide-beam tiers share a curve. The final bin in each panel includes all values at or above the labelled threshold.}{fig:durations}
+
+\subsection{Boundary consistency}
+All comparisons matched 243 word occurrences to baseline in transcript order. For each matched pair, the end displacement is the absolute difference between exported end times. For a comparison $c$ and baseline $b$, with timestamps in seconds,
+\begin{equation}
+  \Delta_{\mathrm{end}} = 1000\,|e_c-e_b|\quad \text{ms}.
+\end{equation}
+The start statistic uses the same definition with start times. Both boundaries must match for a word to count as unchanged.
+
+\begin{center}
+\captionof{table}{Displacement relative to baseline in milliseconds. Brackets give the first and third quartiles.}\label{tab:bounds}
+\smallskip
+\begin{tabular}{lrrrr}
+\toprule
+Comparison & Matched words & Unchanged & Start median [IQR] & End median [IQR]\\
+\midrule
+Corpus dictionary & 243 & 231 & 0 [0, 0] & 0 [0, 0]\\
+US ARPA & 243 & 64 & 0 [0, 10] & 0 [0, 10]\\
+Wide beam & 243 & 243 & 0 [0, 0] & 0 [0, 0]\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The corpus dictionary left both edges unchanged for 231 words. The US ARPA pairing changed at least one edge for 179 words, even though the median absolute displacement for each edge was zero. Its 2.44~s maximum at a word end illustrates the tail of the distribution (Figure~\ref{fig:cdf}). Cross-model displacement is evaluated at word level because the inventories and pronunciation variants differ. Widening the beams produced six byte-identical TextGrids, including both tiers. Under these inputs and the tested settings, widening the search yielded no change in exported boundaries.
+
+\reportfigure{.97}{boundary_displacement.pdf}{Cumulative fraction of matched words by absolute start and end displacement from baseline. The scale is linear around zero and logarithmic for larger values.}{fig:cdf}
+
+\reportfigure{.84}{boundary_examples.pdf}{Three comparisons. Both configurations agree for “wanted”. The end of “bed” differs by 2.44 s. The corpus dictionary supplies phones where the baseline uses \measure{spn} for “dukakis”. Dashed lines mark baseline edges.}{fig:cases}
+
+\section{Qualitative inspection}\label{sec:inspection}
+Praat inspection was performed programmatically through Parselmouth. In Figure~\ref{fig:cases}a, “wanted” occupies 0.53–1.12 s in both the baseline and ARPA word tiers. In panel c, the baseline uses \measure{spn} for “dukakis” at 15.45–16.00 s. The corpus-dictionary run supplies a phone sequence in that region, showing what the added lexical entry changes.
+
+The baseline aligns “bed” to 1.47–4.50 s, while ARPA places it at 1.57–2.06 s (Figure~\ref{fig:cases}b). Figure~\ref{fig:bed} shows that the baseline final \mbox{/{\ipafont d}/} runs to the recording end. Root-mean-square amplitude was $-23.9$ dBFS from 1.47 to 2.06 s and $-45.9$ dBFS from 2.06 to 4.50 s, a drop of about 22 dB. The waveform and spectrogram are consistent with a substantially quieter tail. The earlier endpoint is more plausible on this evidence, although low energy alone cannot locate a stop boundary.
+
+\reportfigure{.97}{alignments/ISLE_SESS0131_BLOCKD02_03_sprt1.pdf}{Baseline waveform, Praat spectrogram, word tier and phone tier for the “bed” recording. The final labelled phone continues through the low-energy tail to 4.50 s.}{fig:bed}
+
+\section{Limitations and conclusion}
+Completion counts valid exports, transcript agreement checks ordered labels, pronunciation coverage measures how many types or tokens have a dictionary pronunciation, and boundary consistency measures agreement between outputs. Accuracy would require hand-annotated reference times. The six recordings have unverified speaker identities, the model pairings differ in training data and phone inventory, and the G2P candidates have not been independently adjudicated. Within this corpus, dictionary augmentation eliminated unknown-phone intervals with limited changes to word timing. The model–dictionary pairing showed greater boundary sensitivity, and increasing the beam changed no saved intervals.
+
+\begingroup
+\small
+\setlength{\parskip}{0pt}
+\begin{thebibliography}{9}
+\setlength{\itemsep}{1pt}
+\bibitem{mfa} M. McAuliffe, M. Socolof, S. Mihuc, M. Wagner, and M. Sonderegger. Montreal Forced Aligner: Trainable Text-Speech Alignment Using Kaldi. \emph{Interspeech}, pp. 498–502, 2017. \href{https://doi.org/10.21437/Interspeech.2017-1386}{DOI}.
+\bibitem{kaldi} D. Povey et al. The Kaldi Speech Recognition Toolkit. \emph{IEEE Workshop on Automatic Speech Recognition and Understanding}, 2011. \href{https://publications.idiap.ch/attachments/papers/2012/Povey_ASRU2011_2011.pdf}{Paper}.
+\bibitem{models} Montreal Corpus Tools. \emph{MFA Models}, acoustic model and pronunciation dictionary documentation. \href{https://mfa-models.readthedocs.io/en/latest/acoustic/index.html}{Model catalog}.
+\bibitem{phonetisaurus} J. R. Novak, N. Minematsu, and K. Hirose. Phonetisaurus: Exploring grapheme-to-phoneme conversion with joint n-gram models in the WFST framework. \emph{Natural Language Engineering}, 22(6), 907–938, 2016. \href{https://doi.org/10.1017/S1351324915000315}{DOI}.
+\bibitem{mfadocs} Montreal Corpus Tools. \emph{Montreal Forced Aligner 3.3.9}, alignment workflow documentation. \href{https://montreal-forced-aligner.readthedocs.io/en/v3.3.9/user_guide/workflows/alignment.html}{Documentation}.
+\bibitem{parselmouth} Y. Jadoul, B. Thompson, and B. de Boer. Introducing Parselmouth: A Python interface to Praat. \emph{Journal of Phonetics}, 71, 1–15, 2018. \href{https://doi.org/10.1016/j.wocn.2018.07.001}{DOI}.
+\end{thebibliography}
+\endgroup
+\end{document}
