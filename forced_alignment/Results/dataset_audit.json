@@ -1,0 +1,12 @@
+{
+  "source": "supplied WAV/transcript directories",
+  "recordings": 6,
+  "transcripts": 6,
+  "pairs": 6,
+  "speaker_handling": "One recording per MFA speaker group. Speaker identities are unavailable.",
+  "duplicate_recordings": [],
+  "issues": [],
+  "duration_s": 97.163375,
+  "word_tokens": 243,
+  "word_types": 150
+}

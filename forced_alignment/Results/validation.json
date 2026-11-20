@@ -1,0 +1,49 @@
+[
+  {
+    "configuration": "baseline",
+    "oov_types": 6,
+    "oov_tokens": 7,
+    "oovs": {
+      "dukakis": 2,
+      "margo": 1,
+      "melnicove": 1,
+      "depoliticize": 1,
+      "maffy": 1,
+      "judgeships": 1
+    },
+    "diagnostic_csvs": []
+  },
+  {
+    "configuration": "corpus_dictionary",
+    "oov_types": 0,
+    "oov_tokens": 0,
+    "oovs": {},
+    "diagnostic_csvs": []
+  },
+  {
+    "configuration": "alternate_model",
+    "oov_types": 4,
+    "oov_tokens": 5,
+    "oovs": {
+      "dukakis": 2,
+      "melnicove": 1,
+      "depoliticize": 1,
+      "maffy": 1
+    },
+    "diagnostic_csvs": []
+  },
+  {
+    "configuration": "decoding_sensitivity",
+    "oov_types": 6,
+    "oov_tokens": 7,
+    "oovs": {
+      "dukakis": 2,
+      "margo": 1,
+      "melnicove": 1,
+      "depoliticize": 1,
+      "maffy": 1,
+      "judgeships": 1
+    },
+    "diagnostic_csvs": []
+  }
+]

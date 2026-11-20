@@ -1,0 +1,189 @@
+{
+  "alignments": {
+    "baseline": {
+      "validation_seconds": 28.65537072699999,
+      "alignment_seconds": 35.11855261099993,
+      "real_time_factor": 0.3614381716464658,
+      "utterances": 6,
+      "aligned_utterances": 6,
+      "completion_rate": 1.0,
+      "aligned_words": 243,
+      "word_intervals": 243,
+      "aligned_phones": 994,
+      "matched_words": 243,
+      "unknown_words": 0,
+      "unknown_phones": 7,
+      "words_with_unknown_phones": 7,
+      "expected_words": 243,
+      "word_ms": {
+        "q1": 170.00000000000082,
+        "median": 319.99999999999983,
+        "q3": 459.99999999999955
+      },
+      "phone_ms": {
+        "q1": 49.999999999998934,
+        "median": 69.9999999999994,
+        "q3": 99.99999999999964
+      },
+      "silence_fraction": 0.1230749137728078,
+      "transcript_agreement": 1.0,
+      "word_alignment_coverage": 1.0,
+      "lexical_pronunciation_coverage": 0.9711934156378601
+    },
+    "corpus_dictionary": {
+      "validation_seconds": 13.96982844799993,
+      "alignment_seconds": 17.953629961999923,
+      "real_time_factor": 0.18477775151387982,
+      "utterances": 6,
+      "aligned_utterances": 6,
+      "completion_rate": 1.0,
+      "aligned_words": 243,
+      "word_intervals": 243,
+      "aligned_phones": 1043,
+      "matched_words": 243,
+      "unknown_words": 0,
+      "unknown_phones": 0,
+      "words_with_unknown_phones": 0,
+      "expected_words": 243,
+      "word_ms": {
+        "q1": 170.00000000000082,
+        "median": 319.9999999999985,
+        "q3": 459.99999999999955
+      },
+      "phone_ms": {
+        "q1": 49.999999999998934,
+        "median": 69.99999999999984,
+        "q3": 100.00000000000004
+      },
+      "silence_fraction": 0.12286907489576179,
+      "transcript_agreement": 1.0,
+      "word_alignment_coverage": 1.0,
+      "lexical_pronunciation_coverage": 1.0
+    },
+    "alternate_model": {
+      "validation_seconds": 57.4134808,
+      "alignment_seconds": 74.555311254,
+      "real_time_factor": 0.7673190773169417,
+      "utterances": 6,
+      "aligned_utterances": 6,
+      "completion_rate": 1.0,
+      "aligned_words": 243,
+      "word_intervals": 243,
+      "aligned_phones": 1026,
+      "matched_words": 243,
+      "unknown_words": 0,
+      "unknown_phones": 5,
+      "words_with_unknown_phones": 5,
+      "expected_words": 243,
+      "word_ms": {
+        "q1": 169.99999999999815,
+        "median": 320.0000000000003,
+        "q3": 459.99950000000035
+      },
+      "phone_ms": {
+        "q1": 49.99999999999982,
+        "median": 69.99999999999851,
+        "q3": 90.0000000000003
+      },
+      "silence_fraction": 0.16861680648701213,
+      "transcript_agreement": 1.0,
+      "word_alignment_coverage": 1.0,
+      "lexical_pronunciation_coverage": 0.9794238683127572
+    },
+    "decoding_sensitivity": {
+      "validation_seconds": 29.968081289999986,
+      "alignment_seconds": 35.598894785000084,
+      "real_time_factor": 0.3663818263311673,
+      "utterances": 6,
+      "aligned_utterances": 6,
+      "completion_rate": 1.0,
+      "aligned_words": 243,
+      "word_intervals": 243,
+      "aligned_phones": 994,
+      "matched_words": 243,
+      "unknown_words": 0,
+      "unknown_phones": 7,
+      "words_with_unknown_phones": 7,
+      "expected_words": 243,
+      "word_ms": {
+        "q1": 170.00000000000082,
+        "median": 319.99999999999983,
+        "q3": 459.99999999999955
+      },
+      "phone_ms": {
+        "q1": 49.999999999998934,
+        "median": 69.9999999999994,
+        "q3": 99.99999999999964
+      },
+      "silence_fraction": 0.1230749137728078,
+      "transcript_agreement": 1.0,
+      "word_alignment_coverage": 1.0,
+      "lexical_pronunciation_coverage": 0.9711934156378601
+    }
+  },
+  "boundaries": {
+    "corpus_dictionary": {
+      "matched_words": 243,
+      "unmatched_baseline": 0,
+      "unmatched_comparison": 0,
+      "start_abs_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0
+      },
+      "end_abs_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0
+      },
+      "duration_delta_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0
+      },
+      "unchanged_both_boundaries": 231
+    },
+    "alternate_model": {
+      "matched_words": 243,
+      "unmatched_baseline": 0,
+      "unmatched_comparison": 0,
+      "start_abs_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 10.0
+      },
+      "end_abs_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 10.0
+      },
+      "duration_delta_ms": {
+        "q1": -10.0,
+        "median": 0.0,
+        "q3": 10.0
+      },
+      "unchanged_both_boundaries": 64
+    },
+    "decoding_sensitivity": {
+      "matched_words": 243,
+      "unmatched_baseline": 0,
+      "unmatched_comparison": 0,
+      "start_abs_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0
+      },
+      "end_abs_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0
+      },
+      "duration_delta_ms": {
+        "q1": 0.0,
+        "median": 0.0,
+        "q3": 0.0
+      },
+      "unchanged_both_boundaries": 243
+    }
+  }
+}

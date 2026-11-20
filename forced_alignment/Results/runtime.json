@@ -1,0 +1,18 @@
+{
+  "baseline": {
+    "validation_seconds": 28.65537072699999,
+    "alignment_seconds": 35.11855261099993
+  },
+  "corpus_dictionary": {
+    "validation_seconds": 13.96982844799993,
+    "alignment_seconds": 17.953629961999923
+  },
+  "alternate_model": {
+    "validation_seconds": 57.4134808,
+    "alignment_seconds": 74.555311254
+  },
+  "decoding_sensitivity": {
+    "validation_seconds": 29.968081289999986,
+    "alignment_seconds": 35.598894785000084
+  }
+}

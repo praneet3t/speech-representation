@@ -1,0 +1,4 @@
+configuration,types,known_types,oov_types,tokens,oov_tokens,type_oov_rate,token_oov_rate,missing
+baseline,150,144,6,243,7,0.04,0.02880658436213992,depoliticize dukakis judgeships maffy margo melnicove
+corpus_dictionary,150,150,0,243,0,0.0,0.0,
+alternate_model,150,146,4,243,5,0.02666666666666667,0.0205761316872428,depoliticize dukakis maffy melnicove

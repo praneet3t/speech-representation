@@ -1,0 +1,4 @@
+case,configuration,utterance,baseline_index,comparison_index,word,baseline_start_s,baseline_end_s,comparison_start_s,comparison_end_s,start_abs_ms,end_abs_ms,duration_delta_ms,observation
+stable,alternate_model,F2BJRLP1,1,1,wanted,0.53,1.12,0.53,1.12,0.0,0.0,0.0,Both configurations place both boundaries at the same times.
+largest shift,alternate_model,ISLE_SESS0131_BLOCKD02_03_sprt1,5,5,bed,1.47,4.5,1.57,2.06,100.0,2440.0,-2540.0,Largest absolute matched-word boundary shift between configurations. The segment between the two word ends has -45.9 dBFS RMS. The preceding shared word region has -23.9 dBFS RMS.
+unknown pronunciation,baseline,F2BJRLP1,,,dukakis,15.45,16.0,,,,,,An unknown-phone interval marks speech with no lexical pronunciation.

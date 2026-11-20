@@ -229,8 +229,9 @@ def analyze(results, corpus, write_csv):
             per_utterance.append({"configuration": config, "utterance": name, "matched_words": len(pairs),
                                   "unmatched_baseline": len(left) - len(pairs),
                                   "unmatched_comparison": len(right) - len(pairs),
-                                  "start_abs_ms": distribution([r["start_abs_ms"] for r in pairs]),
-                                  "end_abs_ms": distribution([r["end_abs_ms"] for r in pairs]),
+                                  **{f"{metric}_{q}": value
+                                     for metric in ("start_abs_ms", "end_abs_ms", "duration_delta_ms")
+                                     for q, value in distribution([r[metric] for r in pairs]).items()},
                                   "max_boundary_ms": max((max(r["start_abs_ms"], r["end_abs_ms"])
                                                           for r in pairs), default=None)})
         comparisons.extend(rows)
@@ -244,11 +245,7 @@ def analyze(results, corpus, write_csv):
         }
     if comparisons:
         write_csv(results / "boundary_comparison.csv", comparisons)
-    write_csv(results / "boundary_per_utterance.csv", [
-        {**r, **{f"{metric}_{q}": val for metric in ("start_abs_ms", "end_abs_ms")
-                 for q, val in r[metric].items()}}
-        | {"start_abs_ms": r["start_abs_ms"]["median"], "end_abs_ms": r["end_abs_ms"]["median"]}
-        for r in per_utterance])
+    write_csv(results / "boundary_per_utterance.csv", per_utterance)
     (results / "summary.json").write_text(json.dumps({"alignments": aggregates, "boundaries": boundary_summary},
                                                      indent=2) + "\n", encoding="utf-8")
     observations = select_observations(comparisons, grids, corpus)

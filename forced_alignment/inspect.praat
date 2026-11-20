@@ -1,5 +1,5 @@
 form Inspect alignment
-    sentence WAV_file
+    sentence wav_file
     sentence grid_file
 endform
 sound = Read from file: wav_file$

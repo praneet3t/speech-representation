@@ -32,6 +32,12 @@ def write_json(path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+def alignment_checksums(results):
+    inputs = ["dataset_inventory.csv", "experiment_config.json", "corpus.dict", "runtime.json"]
+    grids = sorted(p.relative_to(results).as_posix() for p in (results / "TextGrids").rglob("*.TextGrid"))
+    return {name: sha256(results / name) for name in inputs + grids}
+
+
 def execute(args, results, work):
     models = work / "models"
     scratch = work / "run"
@@ -102,6 +108,7 @@ def execute(args, results, work):
     write_json(results / "experiment_config.json", settings)
     runtimes, validations = {}, []
     grid_dir = results / "TextGrids"
+    (results / "alignment_checksums.json").unlink(missing_ok=True)
     if grid_dir.exists():
         shutil.rmtree(grid_dir)
     for name, config in CONFIGURATIONS.items():
@@ -117,6 +124,7 @@ def execute(args, results, work):
                             "oovs": dict(counts), "diagnostic_csvs": files})
     write_json(results / "validation.json", validations)
     write_json(results / "runtime.json", runtimes)
+    write_json(results / "alignment_checksums.json", alignment_checksums(results))
     if args.stage == "align":
         return
     summarize(results, corpus, plots=args.stage == "all")
@@ -147,6 +155,9 @@ def main():
     results = args.results.resolve()
     work = ROOT / "work"
     if args.stage in {"analyze", "plot"}:
+        manifest = results / "alignment_checksums.json"
+        if not manifest.exists() or json.loads(manifest.read_text()) != alignment_checksums(results):
+            raise RuntimeError("The recorded alignment run does not match these artifacts. Run --stage align first.")
         summarize(results, work / "run" / "corpus", plots=args.stage == "plot")
     else:
         execute(args, results, work)

@@ -1,0 +1,19 @@
+configuration,utterance,words,oov_tokens,missing
+baseline,F2BJRLP1,73,3,dukakis margo melnicove
+baseline,F2BJRLP2,73,3,dukakis depoliticize maffy
+baseline,F2BJRLP3,82,1,judgeships
+baseline,ISLE_SESS0131_BLOCKD02_01_sprt1,5,0,
+baseline,ISLE_SESS0131_BLOCKD02_02_sprt1,5,0,
+baseline,ISLE_SESS0131_BLOCKD02_03_sprt1,5,0,
+corpus_dictionary,F2BJRLP1,73,0,
+corpus_dictionary,F2BJRLP2,73,0,
+corpus_dictionary,F2BJRLP3,82,0,
+corpus_dictionary,ISLE_SESS0131_BLOCKD02_01_sprt1,5,0,
+corpus_dictionary,ISLE_SESS0131_BLOCKD02_02_sprt1,5,0,
+corpus_dictionary,ISLE_SESS0131_BLOCKD02_03_sprt1,5,0,
+alternate_model,F2BJRLP1,73,2,dukakis melnicove
+alternate_model,F2BJRLP2,73,3,dukakis depoliticize maffy
+alternate_model,F2BJRLP3,82,0,
+alternate_model,ISLE_SESS0131_BLOCKD02_01_sprt1,5,0,
+alternate_model,ISLE_SESS0131_BLOCKD02_02_sprt1,5,0,
+alternate_model,ISLE_SESS0131_BLOCKD02_03_sprt1,5,0,
