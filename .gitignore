@@ -3,3 +3,7 @@ __pycache__/
 forced_alignment/data/
 forced_alignment/work/
 *.log
+
+emotion_recognition/work/
+
+.venv-emotion/

@@ -2,6 +2,8 @@
 
 This project uses Montreal Forced Aligner (MFA) to put word and phone timestamps on six recordings from the supplied zip. There are 97.16 seconds of audio, 243 words and 150 distinct spellings.
 
+The [emotion recognition study](emotion_recognition/README.md) compares speech, text and their fusion on TESS with word- and speaker-disjoint evaluation.
+
 ## Run it
 
 Extract the zip under `forced_alignment/data/` so its `wav/` and `transcripts/` folders sit together. Raw audio and transcripts stay local. The three NIST SPHERE files are copied to PCM WAV at their original 16 kHz.

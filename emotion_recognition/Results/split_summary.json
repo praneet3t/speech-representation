@@ -1,0 +1,158 @@
+{
+  "holdout_oaf": {
+    "test": {
+      "by_emotion": {
+        "anger": 200,
+        "disgust": 200,
+        "fear": 200,
+        "happiness": 200,
+        "neutral": 200,
+        "sadness": 200,
+        "surprise": 200
+      },
+      "records": 1400,
+      "speakers": [
+        "OAF"
+      ],
+      "words": 200
+    },
+    "train": {
+      "by_emotion": {
+        "anger": 170,
+        "disgust": 170,
+        "fear": 170,
+        "happiness": 170,
+        "neutral": 170,
+        "sadness": 170,
+        "surprise": 170
+      },
+      "records": 1190,
+      "speakers": [
+        "YAF"
+      ],
+      "words": 170
+    },
+    "train_test_word_overlap": 170,
+    "validation": {
+      "by_emotion": {
+        "anger": 30,
+        "disgust": 30,
+        "fear": 30,
+        "happiness": 30,
+        "neutral": 30,
+        "sadness": 30,
+        "surprise": 30
+      },
+      "records": 210,
+      "speakers": [
+        "YAF"
+      ],
+      "words": 30
+    }
+  },
+  "holdout_yaf": {
+    "test": {
+      "by_emotion": {
+        "anger": 200,
+        "disgust": 200,
+        "fear": 200,
+        "happiness": 200,
+        "neutral": 200,
+        "sadness": 200,
+        "surprise": 200
+      },
+      "records": 1400,
+      "speakers": [
+        "YAF"
+      ],
+      "words": 200
+    },
+    "train": {
+      "by_emotion": {
+        "anger": 170,
+        "disgust": 170,
+        "fear": 170,
+        "happiness": 170,
+        "neutral": 170,
+        "sadness": 170,
+        "surprise": 170
+      },
+      "records": 1190,
+      "speakers": [
+        "OAF"
+      ],
+      "words": 170
+    },
+    "train_test_word_overlap": 170,
+    "validation": {
+      "by_emotion": {
+        "anger": 30,
+        "disgust": 30,
+        "fear": 30,
+        "happiness": 30,
+        "neutral": 30,
+        "sadness": 30,
+        "surprise": 30
+      },
+      "records": 210,
+      "speakers": [
+        "OAF"
+      ],
+      "words": 30
+    }
+  },
+  "word": {
+    "test": {
+      "by_emotion": {
+        "anger": 60,
+        "disgust": 60,
+        "fear": 60,
+        "happiness": 60,
+        "neutral": 60,
+        "sadness": 60,
+        "surprise": 60
+      },
+      "records": 420,
+      "speakers": [
+        "OAF",
+        "YAF"
+      ],
+      "words": 30
+    },
+    "train": {
+      "by_emotion": {
+        "anger": 280,
+        "disgust": 280,
+        "fear": 280,
+        "happiness": 280,
+        "neutral": 280,
+        "sadness": 280,
+        "surprise": 280
+      },
+      "records": 1960,
+      "speakers": [
+        "OAF",
+        "YAF"
+      ],
+      "words": 140
+    },
+    "train_test_word_overlap": 0,
+    "validation": {
+      "by_emotion": {
+        "anger": 60,
+        "disgust": 60,
+        "fear": 60,
+        "happiness": 60,
+        "neutral": 60,
+        "sadness": 60,
+        "surprise": 60
+      },
+      "records": 420,
+      "speakers": [
+        "OAF",
+        "YAF"
+      ],
+      "words": 30
+    }
+  }
+}

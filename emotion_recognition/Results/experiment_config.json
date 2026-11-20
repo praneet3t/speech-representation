@@ -1,0 +1,67 @@
+{
+  "acoustic": {
+    "fft": 512,
+    "gru_hidden_per_direction": 64,
+    "hop_samples": 160,
+    "max_trim_per_edge_ms": 250,
+    "mel_bands": 64,
+    "mel_range_hz": [
+      30,
+      7800
+    ],
+    "projection_stride": 3,
+    "rms_activity_threshold": "max(0.001, peak_block_rms * 0.025)",
+    "sample_rate": 16000,
+    "silence_margin_ms": 100,
+    "window_samples": 400
+  },
+  "batch_size": 96,
+  "checkpoint_order": [
+    "validation macro F1",
+    "lower validation loss"
+  ],
+  "dataset_manifest_sha256": "fc2f24fd484b2aeb24c9666e13995dcf0c99722491c37796961646752731a06e",
+  "dependencies": {
+    "python": "3.12.14",
+    "torch": "2.8.0+cpu"
+  },
+  "dropout": 0.25,
+  "label_shuffle": {
+    "label_seed": 1729,
+    "protocol": "word",
+    "seed": 42
+  },
+  "learning_rate": 0.001,
+  "max_epochs": 35,
+  "max_preprocess_threads": 2,
+  "optimizer": "AdamW",
+  "patience": 8,
+  "permutation_seeds": [
+    11,
+    23,
+    37,
+    53,
+    79
+  ],
+  "representation_seed": 42,
+  "representation_tsne": {
+    "max_iter": 1000,
+    "perplexity": 25,
+    "seed": 42
+  },
+  "seed": [
+    42,
+    123,
+    456
+  ],
+  "split_seed": 2026,
+  "text": {
+    "dimensions": 384,
+    "frozen_parameters": 22713216,
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "token_count": 7,
+    "unique_transcripts": 200
+  },
+  "weight_decay": 0.01
+}
