@@ -1,0 +1,15 @@
+name: speech-align
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.18
+  - montreal-forced-aligner=3.3.9
+  - kaldi=5.5.1172=cpu*
+  - kalpy=0.10.5
+  - openfst=1.8.4
+  - numpy=2.4.6
+  - pysoundfile=0.14.0
+  - praatio=6.2.2
+  - praat-parselmouth=0.4.7
+  - matplotlib=3.10.9
+  - pytest=8.4.2
